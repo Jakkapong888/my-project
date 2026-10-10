@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIVAS RENTAL - ระบบบริหารจัดการห้องเช่า</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0c1017;
+            --bg-sidebar: #131926;
+            --bg-card: #182234;
+            --bg-input: #101726;
+            --border-color: #233148;
+            --border-subtle: #1a2538;
+            --text-main: #f0f4f8;
+            --text-muted: #8292ab;
+            --accent-blue: #2563eb;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-orange: #f59e0b;
+            --notif-bg: #151d2c;
+            --table-hover: rgba(255, 255, 255, 0.02);
+        }
+
+        body.light-mode {
+            --bg-main: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-input: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-subtle: #edf2f7;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-blue: #2563eb;
+            --accent-cyan: #0284c7;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-orange: #d97706;
+            --notif-bg: #ffffff;
+            --table-hover: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Prompt', sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: var(--bg-sidebar);
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .brand {
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .brand i { color: var(--accent-cyan); font-size: 1.4rem; }
+
+        .nav-menu {
+            list-style: none;
+            padding: 20px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .nav-item a:hover {
+            color: var(--text-main);
+            background: rgba(125, 125, 125, 0.08);
+        }
+
+        .nav-item.active a {
+            background-color: #22324e;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        body.light-mode .nav-item.active a {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+        }
+
+        .nav-item a i { font-size: 1.1rem; width: 20px; }
+
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 28px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-sidebar);
+            position: relative;
+        }
+
+        .search-box { position: relative; width: 320px; }
+
+        .search-box input {
+            width: 100%;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px 8px 38px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .notif-container { position: relative; }
+
+        .bell-icon {
+            position: relative;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.25rem;
+            padding: 8px;
+            border-radius: 50%;
+            background-color: rgba(125, 125, 125, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bell-icon:hover { color: var(--text-main); background-color: rgba(125, 125, 125, 0.15); }
+
+        .bell-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 4px;
+            background-color: var(--accent-red);
+            color: #fff;
+            border-radius: 9px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-sidebar);
+        }
+
+        .notif-dropdown {
+            position: absolute;
+            top: 48px;
+            right: 0;
+            width: 360px;
+            background-color: var(--notif-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .notif-dropdown.show { display: flex; }
+        .notif-header { padding: 16px 18px 12px 18px; border-bottom: 1px solid var(--border-color); }
+        .notif-header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .notif-title { font-size: 1.15rem; font-weight: 700; color: var(--text-main); }
+        .notif-tabs { display: flex; gap: 8px; }
+
+        .notif-tab-btn {
+            background-color: rgba(125, 125, 125, 0.12);
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .notif-tab-btn.active { background-color: var(--accent-blue); color: #fff; }
+        .notif-body { max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; }
+
+        .notif-item {
+            padding: 14px 18px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-subtle);
+            cursor: pointer;
+        }
+
+        .notif-item:hover { background-color: var(--table-hover); }
+
+        .notif-icon-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+
+        .notif-danger { background-color: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .notif-warning { background-color: rgba(245, 158, 11, 0.15); color: var(--accent-orange); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .notif-info { flex: 1; }
+        .notif-text { font-size: 0.88rem; line-height: 1.4; color: var(--text-main); }
+        .notif-time { font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+
+        .tag-critical {
+            background-color: var(--accent-red);
+            color: #fff;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .notif-empty { padding: 35px 20px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+
+        .dashboard-container {
+            padding: 24px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .page-content { display: none; }
+        .page-content.active { display: flex; flex-direction: column; gap: 20px; }
+        .page-title { font-size: 1.45rem; font-weight: 600; color: var(--text-main); }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--bg-sidebar);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .month-select-wrapper { display: flex; align-items: center; gap: 8px; padding: 4px 10px; }
+
+        .filter-select {
+            background: transparent;
+            color: var(--text-main);
+            border: none;
+            font-size: 0.88rem;
+            outline: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .filter-select option { background-color: #131926; color: #ffffff; }
+        body.light-mode .filter-select option { background-color: #ffffff; color: #0f172a; }
+
+        .filter-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover { color: var(--text-main); }
+        .filter-btn.active { background-color: #2b3952; color: #fff; font-weight: 500; }
+        body.light-mode .filter-btn.active { background-color: var(--accent-blue); color: #fff; }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .card-header-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .title-blue { color: var(--accent-blue); }
+        .title-red { color: var(--accent-red); }
+        .title-green { color: var(--accent-green); }
+        .title-theme { color: var(--text-main); }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        .card-header-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
+        .kpi-flex { display: flex; justify-content: space-between; align-items: center; }
+        .kpi-value { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
+        .kpi-desc { font-size: 0.8rem; margin-top: 6px; }
+
+        .text-green { color: var(--accent-green); }
+        .text-red { color: var(--accent-red); }
+        .text-orange { color: var(--accent-orange); }
+
+        .progress-circle-wrap { width: 55px; height: 55px; position: relative; }
+        .grid-two-cols { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; }
+
+        .chart-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        .dark-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .dark-table th {
+            text-align: left;
+            padding: 10px 14px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .dark-table td {
+            padding: 13px 14px;
+            border-bottom: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            vertical-align: middle;
+        }
+
+        .dark-table tr:hover td { background-color: var(--table-hover); }
+        .empty-cell { text-align: center; color: var(--text-muted); padding: 35px !important; }
+
+        .btn-view {
+            background-color: var(--bg-input);
+            color: var(--accent-blue);
+            border: 1px solid var(--border-color);
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-pay-action {
+            background-color: #10b981;
+            color: #ffffff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-pay-action:hover { background-color: #059669; }
+
+        .btn-view-slip {
+            background-color: rgba(37, 99, 235, 0.15);
+            color: var(--accent-blue);
+            border: 1px solid rgba(37, 99, 235, 0.3);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .btn-view-slip:hover { background-color: var(--accent-blue); color: #fff; }
+
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .status-active { background-color: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .status-overdue { background-color: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        .form-group label { font-size: 0.88rem; color: var(--text-muted); }
+
+        .form-group input {
+            padding: 9px 12px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            color: var(--text-main);
+        }
+
+        .form-group input:focus { border-color: var(--accent-blue); }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .home-grid {
+            display: grid;
+            grid-template-columns: 280px 1.4fr 1.2fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .tenant-grid-layout {
+            display: grid;
+            grid-template-columns: 310px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .badge-contract-active {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: var(--accent-orange);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .badge-contract-completed {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-refund {
+            background-color: #10b981;
+            color: #fff;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 6px;
+        }
+
+        .badge-refunded {
+            background-color: rgba(37, 99, 235, 0.12);
+            color: var(--accent-blue);
+            border: 1px solid rgba(37, 99, 235, 0.25);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-delete-tenant {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-delete-tenant:hover { background-color: #ef4444; color: #fff; }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+        .slip-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            background-color: var(--bg-input);
+            cursor: pointer;
+        }
+
+        .slip-upload-area:hover { border-color: var(--accent-blue); }
+
+        .slip-preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 6px;
+            margin-top: 8px;
+            display: none;
+            object-fit: contain;
+        }
+
+        @media (max-width: 1100px) {
+            .home-grid, .tenant-grid-layout, .grid-two-cols { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span>NIVAS RENTAL</span>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item" data-target="home">
+                <a onclick="switchMenu('home')"><i class="fa-solid fa-gauge"></i> หน้าแรก</a>
+            </li>
+            <li class="nav-item active" data-target="analytics">
+                <a onclick="switchMenu('analytics')"><i class="fa-solid fa-chart-line"></i> วิเคราะห์รายได้</a>
+            </li>
+            <li class="nav-item" data-target="tenants">
+                <a onclick="switchMenu('tenants')"><i class="fa-solid fa-users"></i> จัดการผู้เช่า</a>
+            </li>
+            <li class="nav-item" data-target="settings">
+                <a onclick="switchMenu('settings')"><i class="fa-solid fa-gear"></i> ตั้งค่า</a>
+            </li>
+        </ul>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search...">
+            </div>
+
+            <div class="notif-container">
+                <div class="bell-icon" id="bellBtn" onclick="toggleNotifDropdown(event)">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="bell-badge" id="notifBadge" style="display: none;">0</span>
+                </div>
+
+                <div class="notif-dropdown" id="notifMenu">
+                    <div class="notif-header">
+                        <div class="notif-header-top">
+                            <span class="notif-title">Notifications</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted);" id="notifSummaryText">0 รายการ</span>
+                        </div>
+                        <div class="notif-tabs">
+                            <button class="notif-tab-btn active" id="tabAll" onclick="filterNotif('all')">All</button>
+                            <button class="notif-tab-btn" id="tabCritical" onclick="filterNotif('critical')">Overdue &gt; 1 Mo</button>
+                        </div>
+                    </div>
+                    <div class="notif-body" id="notifList"></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-container">
+            <!-- 1. หน้าแรก -->
+            <div id="page-home" class="page-content">
+                <h1 class="page-title">ระบบจัดการการชำระเงินห้องพัก</h1>
+                <div class="home-grid">
+                    <div class="card">
+                        <div class="card-header-title title-blue">
+                            <i class="fa-regular fa-circle-plus"></i> ออกบิลห้องพักใหม่
+                        </div>
+                        <form id="billingForm" onsubmit="submitBilling(event)">
+                            <div class="form-group">
+                                <label>หมายเลขห้อง</label>
+                                <input type="text" id="billRoom" placeholder="เช่น 101" required>
+                            </div>
+                            <div class="form-group">
+                                <label>ราคาเช่า/เดือน (บาท)</label>
+                                <input type="number" id="billRent" placeholder="เช่น 3500" required>
+                            </div>
+                            <div class="form-group">
+                                <label>ค่าน้ำ (บาท)</label>
+                                <input type="number" id="billWater" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>ค่าไฟ (บาท)</label>
+                                <input type="number" id="billElectric" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>วันที่ออกบิล</label>
+                                <input type="date" id="billDateCreated" required>
+                            </div>
+                            <button type="submit" class="btn-submit">
+                                <i class="fa-regular fa-floppy-disk"></i> บันทึกข้อมูล
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header-title title-red">
+                            <i class="fa-solid fa-hourglass-half"></i> รายการค้างชำระ (รอดำเนินการ)
+                        </div>
+                        <table class="dark-table">
+                            <thead>
+                                <tr>
+                                    <th>ห้อง</th>
+                                    <th>ค่าเช่า</th>
+                                    <th>น้ำ/ไฟ</th>
+                                    <th>รวมทั้งสิ้น</th>
+                                    <th>สถานะ</th>
+                                    <th>การชำระ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pendingTableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header-title title-green">
+                            <i class="fa-solid fa-circle-check"></i> ประวัติชำระเงินเรียบร้อยแล้ว
+                        </div>
+                        <table class="dark-table">
+                            <thead>
+                                <tr>
+                                    <th>ห้อง</th>
+                                    <th>ยอดชำระ</th>
+                                    <th>เวลาที่จ่าย</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paidTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. หน้าวิเคราะห์รายได้ -->
+            <div id="page-analytics" class="page-content active">
+                <div class="header-section">
+                    <h1 class="page-title">ภาพรวมโครงการและรายงาน</h1>
+                    <div class="filter-group">
+                        <div class="month-select-wrapper">
+                            <i class="fa-regular fa-calendar" style="color: var(--text-muted); font-size: 0.9rem;"></i>
+                            <select class="filter-select" id="monthDropdown" onchange="onMonthSelectChange()">
+                                <option value="01-2026">มกราคม 2026</option>
+                                <option value="02-2026">กุมภาพันธ์ 2026</option>
+                                <option value="03-2026">มีนาคม 2026</option>
+                                <option value="04-2026">เมษายน 2026</option>
+                                <option value="05-2026">พฤษภาคม 2026</option>
+                                <option value="06-2026">มิถุนายน 2026</option>
+                                <option value="07-2026">กรกฎาคม 2026</option>
+                                <option value="08-2026">สิงหาคม 2026</option>
+                                <option value="09-2026" selected>กันยายน 2026</option>
+                                <option value="10-2026">ตุลาคม 2026</option>
+                                <option value="11-2026">พฤศจิกายน 2026</option>
+                                <option value="12-2026">ธันวาคม 2026</option>
+                            </select>
+                        </div>
+                        <button class="filter-btn" id="btn-custom" onclick="openCustomModal()">
+                            <i class="fa-solid fa-sliders"></i> <span id="customBtnText">Custom range</span>
+                        </button>
+                        <button class="filter-btn active" id="btn-this_month" onclick="changePeriod('this_month')">เดือนนี้</button>
+                        <button class="filter-btn" id="btn-last_month" onclick="changePeriod('last_month')">เดือนที่แล้ว</button>
+                        <button class="filter-btn" id="btn-quarter" onclick="changePeriod('quarter')">ไตรมาสนี้</button>
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="card">
+                        <div class="card-header-label">อัตราการเช่า</div>
+                        <div class="kpi-flex">
+                            <div>
+                                <div class="kpi-value" id="kpiOccupancy">0%</div>
+                                <div class="kpi-desc text-green" id="kpiOccupancyChange">กำลังโหลด...</div>
+                            </div>
+                            <div class="progress-circle-wrap">
+                                <canvas id="occupancyGauge"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header-label">รายได้รวม</div>
+                        <div class="kpi-flex">
+                            <div>
+                                <div class="kpi-value" id="kpiRevenue">฿0</div>
+                                <div class="kpi-desc text-red" id="kpiRevenueChange">จากเป้าหมาย</div>
+                            </div>
+                            <i class="fa-solid fa-chart-line text-red" style="font-size: 1.8rem;"></i>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header-label">ผู้เช่าค้างชำระ</div>
+                        <div class="kpi-flex">
+                            <div>
+                                <div class="kpi-value" id="kpiOverdue">0 ห้อง</div>
+                                <div class="kpi-desc text-orange" id="kpiOverdueDetail">ไม่มีผู้เช่าค้างชำระ</div>
+                            </div>
+                            <span class="badge-status status-overdue">status</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-two-cols">
+                    <div class="card">
+                        <div class="chart-card-title">
+                            <span>เกณฑ์รายรับรายเดือน</span>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; gap: 12px;">
+                                <span><i class="fa-solid fa-circle" style="color: #3b82f6; font-size: 0.6rem;"></i> รายรับจริง</span>
+                                <span><i class="fa-solid fa-circle" style="color: #64748b; font-size: 0.6rem;"></i> เป้าหมาย</span>
+                            </div>
+                        </div>
+                        <div style="height: 240px; position: relative;">
+                            <canvas id="monthlyTrendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="chart-card-title">สัดส่วนประเภทผู้เช่า</div>
+                        <div style="height: 240px; position: relative; display: flex; justify-content: center;">
+                            <canvas id="tenantTypeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-two-cols">
+                    <div class="card">
+                        <div class="chart-card-title">สถานะผู้เช่ารายห้อง</div>
+                        <table class="dark-table">
+                            <thead>
+                                <tr>
+                                    <th>ห้อง</th>
+                                    <th>ชื่อผู้เช่า</th>
+                                    <th>สถานะสัญญา</th>
+                                    <th>ยอดค้างชำระ</th>
+                                    <th>รายละเอียด</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardTenantTable"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <div class="chart-card-title">5 อันดับรายได้สูงสุดตามประเภท</div>
+                        <div style="height: 220px; position: relative;">
+                            <canvas id="topRevenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. หน้าจัดการผู้เช่า -->
+            <div id="page-tenants" class="page-content">
+                <div class="tenant-grid-layout">
+                    <div class="card">
+                        <div class="card-header-title title-blue">
+                            <i class="fa-solid fa-user-plus"></i> เพิ่มข้อมูลผู้เช่า
+                        </div>
+                        <form id="tenantForm" onsubmit="submitTenant(event)">
+                            <div class="form-group">
+                                <label>หมายเลขห้องที่เช่า</label>
+                                <input type="text" id="tRoom" placeholder="เช่น 101" required>
+                            </div>
+                            <div class="form-group">
+                                <label>ชื่อ-นามสกุล</label>
+                                <input type="text" id="tName" placeholder="เช่น สมชาย ใจดี" required>
+                            </div>
+                            <div class="form-group">
+                                <label>เบอร์โทรศัพท์</label>
+                                <input type="tel" id="tPhone" placeholder="เช่น 0812345678" required>
+                            </div>
+                            <div class="form-group">
+                                <label>วัน/เดือน/ปี ที่เริ่มเช่า</label>
+                                <input type="date" id="tStartDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>สัญญาเช่า (เดือนคืนมัดจำ)</label>
+                                <input type="number" id="tContractMonths" value="6" required>
+                            </div>
+                            <button type="submit" class="btn-submit">
+                                <i class="fa-regular fa-floppy-disk"></i> บันทึกข้อมูลผู้เช่า
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header-title title-theme">
+                            <i class="fa-solid fa-users"></i> ข้อมูลผู้เช่าทั้งหมด
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="dark-table">
+                                <thead>
+                                    <tr>
+                                        <th>ห้อง</th>
+                                        <th>ชื่อ-นามสกุล</th>
+                                        <th>เบอร์โทร</th>
+                                        <th>เริ่มเช่าเมื่อ</th>
+                                        <th>พักแล้ว (เดือน)</th>
+                                        <th>สถานะสัญญา / มัดจำ</th>
+                                        <th style="text-align: center;">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tenantTableList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. หน้าตั้งค่า -->
+            <div id="page-settings" class="page-content">
+                <h1 class="page-title">ตั้งค่าระบบ</h1>
+                <div class="card">
+                    <div class="card-header-title title-theme">
+                        <i class="fa-solid fa-circle-half-stroke"></i> การแสดงผลธีม (Theme Appearance)
+                    </div>
+                    <div style="display: flex; gap: 20px;">
+                        <button class="filter-btn active" onclick="setTheme('dark')"><i class="fa-solid fa-moon"></i> โหมดมืด (Dark Theme)</button>
+                        <button class="filter-btn" onclick="setTheme('light')"><i class="fa-solid fa-sun"></i> โหมดสว่าง (Light Theme)</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal ชำระเงิน / แนบสลิป -->
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal-content">
+            <h3 style="font-size: 1.15rem; color: var(--text-main);">ยืนยันการรับชำระเงิน</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted);" id="payModalInfo">...</p>
+            
+            <div class="form-group">
+                <label>แนบรูปสลิปการโอนเงิน (ไม่บังคับ จะใส่หรือไม่ใส่ก็ได้):</label>
+                <div class="slip-upload-area" onclick="document.getElementById('slipFileInput').click()">
+                    <i class="fa-regular fa-image" style="font-size: 1.6rem; color: var(--text-muted); display: block; margin-bottom: 6px;"></i>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);">คลิกเพื่อเลือกไฟล์รูปภาพสลิป</span>
+                    <input type="file" id="slipFileInput" accept="image/*" style="display: none;" onchange="handleSlipSelected(event)">
+                    <img id="slipPreview" class="slip-preview-img" alt="สลิปตัวอย่าง">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="filter-btn" onclick="closePaymentModal()">ยกเลิก</button>
+                <button class="btn-submit" style="width: auto; padding: 7px 18px; background: #10b981;" onclick="confirmPaymentSubmit()">
+                    <i class="fa-solid fa-check"></i> ยืนยันชำระเงิน
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal ดูสลิปขนาดเต็ม -->
+    <div class="modal-overlay" id="viewSlipModal" onclick="closeViewSlipModal()">
+        <div style="background: var(--bg-card); padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); max-width: 90%; max-height: 90%; display: flex; flex-direction: column; align-items: center;" onclick="event.stopPropagation()">
+            <h4 style="color: var(--text-main); margin-bottom: 12px;">หลักฐานสลิปการโอนเงิน</h4>
+            <img id="fullSlipImg" src="" style="max-width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain;">
+            <button class="filter-btn" style="margin-top: 12px;" onclick="closeViewSlipModal()">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+
+    <!-- Modal Custom Range -->
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-content">
+            <h3 style="font-size: 1.1rem; color: var(--text-main);">กำหนดช่วงวันที่ (Custom Range)</h3>
+            <div class="form-group">
+                <label>วันที่เริ่มต้น:</label>
+                <input type="date" id="startDate" value="2026-09-01">
+            </div>
+            <div class="form-group">
+                <label>วันที่สิ้นสุด:</label>
+                <input type="date" id="endDate" value="2026-09-30">
+            </div>
+            <div class="modal-actions">
+                <button class="filter-btn" onclick="closeCustomModal()">ยกเลิก</button>
+                <button class="btn-submit" style="width: auto; padding: 6px 16px;" onclick="applyCustomRange()">ตกลง</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const todayDate = new Date();
+        document.getElementById('tStartDate').valueAsDate = todayDate;
+        document.getElementById('billDateCreated').valueAsDate = todayDate;
+
+        let gaugeChart = null, trendChart = null, doughnutChart = null, barChart = null;
+
+        function initCharts() {
+            const gaugeCtx = document.getElementById('occupancyGauge').getContext('2d');
+            gaugeChart = new Chart(gaugeCtx, {
+                type: 'doughnut',
+                data: { datasets: [{ data: [25, 75], backgroundColor: ['#10b981', '#1f293d'], borderWidth: 0, circumference: 360 }] },
+                options: { cutout: '75%', responsive: true, maintainAspectRatio: false, plugins: { tooltip: { enabled: false } } }
+            });
+
+            const trendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
+            trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                    datasets: [
+                        { label: 'รายรับจริง', data: [41000, 42500, 43000, 44500, 46000, 45500, 47000, 48500, 45200, 0], borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.2)', fill: true, tension: 0.4 },
+                        { label: 'เป้าหมาย', data: [43000, 43500, 44000, 44500, 45000, 45500, 46000, 46500, 47000, 47500], borderColor: '#64748b', borderDash: [5, 5], fill: false, tension: 0.2 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8292ab' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8292ab' } }
+                    }
+                }
+            });
+
+            const doughnutCtx = document.getElementById('tenantTypeChart').getContext('2d');
+            doughnutChart = new Chart(doughnutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['สัญญา 1 ปี', 'สัญญา 6 เดือน', 'นักศึกษา', 'คนทำงาน', 'อื่น ๆ'],
+                    datasets: [{ data: [35, 25, 20, 10, 10], backgroundColor: ['#2563eb', '#0ea5e9', '#06b6d4', '#10b981', '#64748b'], borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { color: '#8292ab', font: { family: 'Prompt', size: 11 } } } },
+                    cutout: '60%'
+                }
+            });
+
+            const barCtx = document.getElementById('topRevenueChart').getContext('2d');
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['ห้องพัก', 'ไฟ', 'ค่าน้ำ', 'ค่าบริการส่วนกลาง', 'ค่าที่จอดรถ'],
+                    datasets: [{ data: [36000, 18000, 9500, 6000, 4200], backgroundColor: '#2563eb', borderRadius: 4 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#8292ab', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#8292ab' } }
+                    }
+                }
+            });
+        }
+
+        function clearFilterActive() {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        function onMonthSelectChange() {
+            clearFilterActive();
+            fetchDashboardData(document.getElementById('monthDropdown').value);
+        }
+
+        function changePeriod(period) {
+            clearFilterActive();
+            const btn = document.getElementById('btn-' + period);
+            if (btn) btn.classList.add('active');
+            
+            if (period === 'this_month') document.getElementById('monthDropdown').value = '09-2026';
+            if (period === 'last_month') document.getElementById('monthDropdown').value = '08-2026';
+            
+            fetchDashboardData(period);
+        }
+
+        function openCustomModal() { document.getElementById('customModal').style.display = 'flex'; }
+        function closeCustomModal() { document.getElementById('customModal').style.display = 'none'; }
+
+        function applyCustomRange() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            if (!start || !end) return;
+            closeCustomModal();
+            clearFilterActive();
+            document.getElementById('btn-custom').classList.add('active');
+            document.getElementById('customBtnText').innerText = `${start} ถึง ${end}`;
+            fetchDashboardData('custom', start, end);
+        }
+
+        function fetchDashboardData(period, start = '', end = '') {
+            let url = `/api/data?period=${period}`;
+            if (start && end) url += `&start=${start}&end=${end}`;
+
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    document.getElementById('kpiOccupancy').innerText = data.kpi.occupancy_rate + '%';
+                    document.getElementById('kpiOccupancyChange').innerText = data.kpi.occupancy_change;
+                    document.getElementById('kpiRevenue').innerText = '฿' + data.kpi.total_revenue;
+                    document.getElementById('kpiRevenueChange').innerText = data.kpi.revenue_change;
+                    document.getElementById('kpiOverdue').innerText = data.kpi.overdue_rooms + ' ห้อง';
+                    document.getElementById('kpiOverdueDetail').innerText = data.kpi.overdue_detail;
+
+                    if (gaugeChart) {
+                        gaugeChart.data.datasets[0].data = [data.kpi.occupancy_rate, Math.max(0, 100 - data.kpi.occupancy_rate)];
+                        gaugeChart.update();
+                    }
+                    if (trendChart) {
+                        trendChart.data.datasets[0].data = data.monthly_actual;
+                        trendChart.data.datasets[1].data = data.monthly_target;
+                        trendChart.update();
+                    }
+                    if (doughnutChart) {
+                        doughnutChart.data.datasets[0].data = data.tenant_types;
+                        doughnutChart.update();
+                    }
+                    if (barChart) {
+                        barChart.data.datasets[0].data = data.top_revenues;
+                        barChart.update();
+                    }
+
+                    renderDashboardTable(data.tenants);
+                })
+                .catch(err => console.error("Error fetching dashboard data:", err));
+        }
+
+        function renderDashboardTable(list) {
+            const tbody = document.getElementById('dashboardTenantTable');
+            tbody.innerHTML = '';
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-cell">ยังไม่มีข้อมูลห้องเช่า</td></tr>`;
+                return;
+            }
+            list.forEach(t => {
+                const tr = document.createElement('tr');
+                const badgeClass = t.status_type === 'overdue' ? 'status-overdue' : 'status-active';
+                tr.innerHTML = `
+                    <td style="font-weight:600; color:var(--accent-blue);">ห้อง ${t.room}</td>
+                    <td>${t.name}</td>
+                    <td><span class="badge-status ${badgeClass}">${t.status}</span></td>
+                    <td>฿${t.overdue.toLocaleString()}</td>
+                    <td><button class="btn-view" onclick="switchMenu('tenants')">ดูข้อมูล</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function switchMenu(pageName) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-target') === pageName) item.classList.add('active');
+            });
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            const target = document.getElementById('page-' + pageName);
+            if (target) target.classList.add('active');
+
+            if (pageName === 'analytics') {
+                setTimeout(() => {
+                    if (trendChart) trendChart.resize();
+                    if (doughnutChart) doughnutChart.resize();
+                    if (barChart) barChart.resize();
+                    if (gaugeChart) gaugeChart.resize();
+                }, 50);
+                const currentMonth = document.getElementById('monthDropdown').value;
+                fetchDashboardData(currentMonth);
+            }
+            if (pageName === 'home') loadRentals();
+            if (pageName === 'tenants') loadTenants();
+        }
+
+        let currentPayingBill = null;
+        let selectedSlipBase64 = null;
+
+        function loadRentals() {
+            fetch('/api/rentals').then(res => res.json()).then(data => {
+                renderPendingTable(data.pending);
+                renderPaidTable(data.paid);
+                loadNotifications();
+            });
+        }
+
+        function submitBilling(e) {
+            e.preventDefault();
+            fetch('/api/rentals/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    room: document.getElementById('billRoom').value,
+                    rent: document.getElementById('billRent').value,
+                    water: document.getElementById('billWater').value,
+                    electric: document.getElementById('billElectric').value,
+                    date_created: document.getElementById('billDateCreated').value
+                })
+            }).then(res => res.json()).then(res => {
+                if (res.success) {
+                    document.getElementById('billingForm').reset();
+                    document.getElementById('billDateCreated').valueAsDate = new Date();
+                    loadRentals();
+                }
+            });
+        }
+
+        function openPaymentModal(bill) {
+            currentPayingBill = bill;
+            selectedSlipBase64 = null;
+            document.getElementById('payModalInfo').innerText = `ห้อง ${bill.room} | ค่าเช่า ฿${bill.rent.toLocaleString()} | ยอดรวมทั้งสิ้น ฿${bill.total.toLocaleString()} บ.`;
+            document.getElementById('slipFileInput').value = '';
+            document.getElementById('slipPreview').style.display = 'none';
+            document.getElementById('slipPreview').src = '';
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            currentPayingBill = null;
+            selectedSlipBase64 = null;
+        }
+
+        function handleSlipSelected(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    selectedSlipBase64 = e.target.result;
+                    const preview = document.getElementById('slipPreview');
+                    preview.src = selectedSlipBase64;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function confirmPaymentSubmit() {
+            if (!currentPayingBill) return;
+            fetch('/api/rentals/pay', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: currentPayingBill.id,
+                    slip_image: selectedSlipBase64
+                })
+            }).then(res => res.json()).then(res => {
+                if (res.success) {
+                    closePaymentModal();
+                    loadRentals();
+                }
+            });
+        }
+
+        function viewSlip(imgBase64) {
+            document.getElementById('fullSlipImg').src = imgBase64;
+            document.getElementById('viewSlipModal').style.display = 'flex';
+        }
+
+        function closeViewSlipModal() {
+            document.getElementById('viewSlipModal').style.display = 'none';
+        }
+
+        function renderPendingTable(list) {
+            const tbody = document.getElementById('pendingTableBody');
+            tbody.innerHTML = '';
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="empty-cell">ไม่มีรายการค้างชำระ</td></tr>`;
+                return;
+            }
+            list.forEach(item => {
+                const tr = document.createElement('tr');
+                const isCrit = item.is_critical_overdue;
+                const statusBadge = isCrit 
+                    ? `<span style="background:rgba(239,68,68,0.15); color:#ef4444; padding:3px 8px; border-radius:6px; font-size:0.75rem; font-weight:600;"><i class="fa-solid fa-circle-exclamation"></i> ค้างเกิน 1 ด. (${item.days_overdue} วัน)</span>`
+                    : `<span style="background:rgba(245,158,11,0.15); color:var(--accent-orange); padding:3px 8px; border-radius:6px; font-size:0.75rem;">ค้าง ${item.days_overdue} วัน</span>`;
+
+                tr.innerHTML = `
+                    <td style="font-weight:600; color:var(--accent-blue);">ห้อง ${item.room}</td>
+                    <td>${item.rent.toLocaleString()}</td>
+                    <td>${item.water.toLocaleString()} / ${item.electric.toLocaleString()}</td>
+                    <td style="font-weight:600; color:#ef4444;">${item.total.toLocaleString()} บ.</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn-pay-action" onclick='openPaymentModal(${JSON.stringify(item)})'>
+                            <i class="fa-solid fa-check"></i> จ่ายแล้ว
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderPaidTable(list) {
+            const tbody = document.getElementById('paidTableBody');
+            tbody.innerHTML = '';
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="empty-cell">ยังไม่มีประวัติการชำระ</td></tr>`;
+                return;
+            }
+            list.forEach(item => {
+                const tr = document.createElement('tr');
+                let slipBtnHtml = '';
+                if (item.slip_image) {
+                    slipBtnHtml = `<div><button class="btn-view-slip" onclick="viewSlip('${item.slip_image}')"><i class="fa-solid fa-receipt"></i> ดูสลิป</button></div>`;
+                }
+
+                tr.innerHTML = `
+                    <td style="font-weight:600; color:var(--accent-blue);">ห้อง ${item.room}</td>
+                    <td>
+                        <div style="color:#10b981; font-weight:600;">${item.total.toLocaleString()} บาท</div>
+                        ${slipBtnHtml}
+                    </td>
+                    <td style="color:var(--text-muted); font-size:0.8rem;">${item.paid_time}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function loadTenants() {
+            fetch('/api/tenants').then(res => res.json()).then(list => renderTenantsTable(list));
+        }
+
+        function submitTenant(e) {
+            e.preventDefault();
+            fetch('/api/tenants/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    room_number: document.getElementById('tRoom').value,
+                    fullname: document.getElementById('tName').value,
+                    phone: document.getElementById('tPhone').value,
+                    start_date: document.getElementById('tStartDate').value,
+                    contract_months: document.getElementById('tContractMonths').value
+                })
+            }).then(res => res.json()).then(res => {
+                if (res.success) {
+                    document.getElementById('tenantForm').reset();
+                    document.getElementById('tStartDate').valueAsDate = new Date();
+                    loadTenants();
+                }
+            });
+        }
+
+        function deleteTenant(id) {
+            if (!confirm('ยืนยันการลบผู้เช่ารายนี้?')) return;
+            fetch('/api/tenants/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) })
+                .then(res => res.json()).then(res => { if (res.success) loadTenants(); });
+        }
+
+        function refundDeposit(id) {
+            if (!confirm('ยืนยันการคืนเงินมัดจำ?')) return;
+            fetch('/api/tenants/refund', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) })
+                .then(res => res.json()).then(res => { if (res.success) loadTenants(); });
+        }
+
+        function renderTenantsTable(list) {
+            const tbody = document.getElementById('tenantTableList');
+            tbody.innerHTML = '';
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-cell">ยังไม่มีข้อมูลผู้เช่า</td></tr>`;
+                return;
+            }
+            list.forEach(t => {
+                const tr = document.createElement('tr');
+                let depHtml = t.deposit_status === 'refunded'
+                    ? `<span class="badge-refunded"><i class="fa-solid fa-check"></i> คืนมัดจำแล้ว</span>`
+                    : (t.is_completed ? `<span class="badge-contract-completed">ครบสัญญา</span> <button class="btn-refund" onclick="refundDeposit(${t.id})">คืนมัดจำ</button>` : `<span class="badge-contract-active">สัญญา ${t.contract_months} ด. (ขาด ${t.remaining_months} ด.)</span>`);
+
+                tr.innerHTML = `
+                    <td style="font-weight:600; color:var(--accent-blue);">ห้อง ${t.room_number}</td>
+                    <td>${t.fullname}</td>
+                    <td>${t.phone}</td>
+                    <td>${t.start_date}</td>
+                    <td>${t.stayed_months} เดือน</td>
+                    <td>${depHtml}</td>
+                    <td style="text-align:center;"><button class="btn-delete-tenant" onclick="deleteTenant(${t.id})"><i class="fa-regular fa-trash-can"></i> ลบ</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        let rawNotifications = [];
+        let currentFilter = 'all';
+
+        function toggleNotifDropdown(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('notifMenu');
+            menu.classList.toggle('show');
+            if (menu.classList.contains('show')) loadNotifications();
+        }
+
+        document.addEventListener('click', function(e) {
+            const container = document.querySelector('.notif-container');
+            if (container && !container.contains(e.target)) {
+                document.getElementById('notifMenu').classList.remove('show');
+            }
+        });
+
+        function filterNotif(type) {
+            currentFilter = type;
+            document.getElementById('tabAll').classList.toggle('active', type === 'all');
+            document.getElementById('tabCritical').classList.toggle('active', type === 'critical');
+            renderNotifications();
+        }
+
+        function loadNotifications() {
+            fetch('/api/notifications').then(res => res.json()).then(data => {
+                rawNotifications = data.notifications;
+                const badge = document.getElementById('notifBadge');
+                if (data.total_count > 0) {
+                    badge.innerText = data.total_count;
+                    badge.style.display = 'flex';
+                    badge.style.backgroundColor = data.critical_count > 0 ? '#ef4444' : '#f59e0b';
+                } else {
+                    badge.style.display = 'none';
+                }
+                document.getElementById('notifSummaryText').innerText = `${data.total_count} รายการ`;
+                renderNotifications();
+            });
+        }
+
+        function renderNotifications() {
+            const listContainer = document.getElementById('notifList');
+            listContainer.innerHTML = '';
+            let filtered = currentFilter === 'critical' ? rawNotifications.filter(n => n.is_critical_overdue) : rawNotifications;
+
+            if (!filtered || filtered.length === 0) {
+                listContainer.innerHTML = `<div class="notif-empty"><i class="fa-regular fa-bell-slash" style="font-size:1.8rem; margin-bottom:8px; display:block;"></i>ไม่มีรายการแจ้งเตือนค้างชำระ</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'notif-item';
+                const isCrit = item.is_critical_overdue;
+                const iconClass = isCrit ? 'notif-danger' : 'notif-warning';
+                const icon = isCrit ? 'fa-triangle-exclamation' : 'fa-clock';
+                const tagHtml = isCrit 
+                    ? `<span class="tag-critical">ค้างเกิน 1 เดือน (${item.days_overdue} วัน)</span>`
+                    : `<span style="color:var(--accent-orange); font-weight:500;">ค้าง ${item.days_overdue} วัน</span>`;
+
+                itemDiv.innerHTML = `
+                    <div class="notif-icon-circle ${iconClass}"><i class="fa-solid ${icon}"></i></div>
+                    <div class="notif-info">
+                        <div class="notif-text"><b>ห้อง ${item.room}</b> ค้างชำระ <b>฿${item.total.toLocaleString()}</b></div>
+                        <div class="notif-time">${tagHtml} <span style="color:var(--text-muted); font-size:0.75rem;">บิล: ${item.date_created}</span></div>
+                    </div>
+                `;
+                itemDiv.onclick = () => { switchMenu('home'); document.getElementById('notifMenu').classList.remove('show'); };
+                listContainer.appendChild(itemDiv);
+            });
+        }
+
+        function setTheme(mode) {
+            if (mode === 'light') {
+                document.body.classList.add('light-mode');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.classList.remove('light-mode');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        window.onload = function() {
+            if (localStorage.getItem('theme') === 'light') setTheme('light');
+            initCharts();
+            loadRentals();
+            loadNotifications();
+            changePeriod('this_month');
+        };
+    </script>
+</body>
+</html>
